@@ -1,0 +1,23 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        if: runner.os == 'Linux'
+        run: shellcheck -x login.sh lib.sh docker-credential-orkestia tests/run.sh
+      - name: offline tests
+        run: bash tests/run.sh

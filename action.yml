@@ -1,0 +1,64 @@
+name: Orkestia registry login
+description: Log a GitHub Actions job into the Orkestia registry (Docker, pip, uv, twine, npm) with no stored secret.
+author: Orkestia
+branding:
+  icon: lock
+  color: blue
+
+inputs:
+  scope:
+    description: >-
+      "push" or "pull". Empty asks for the widest access the job is allowed:
+      push on the default branch, a tag or an environment, pull otherwise.
+      "push" fails the step when the job may only pull.
+    required: false
+    default: ""
+  docker:
+    description: Run docker login for the registry when docker is installed.
+    required: false
+    default: "true"
+  python:
+    description: Give pip and uv the package index credentials (a netrc file for this job only).
+    required: false
+    default: "true"
+  npm:
+    description: Point the namespace's npm scope at the registry (user npmrc for this job only).
+    required: false
+    default: "true"
+  exchange-url:
+    description: Token exchange endpoint. Leave the default.
+    required: false
+    default: https://workflow-api.orkestia.dev/api/auth/workload/token
+
+outputs:
+  namespace:
+    description: The organization's namespace, also the registry username and the npm scope.
+    value: ${{ steps.login.outputs.namespace }}
+  scope:
+    description: The access granted, "pull" or "push".
+    value: ${{ steps.login.outputs.scope }}
+  registry:
+    description: Image prefix, for example registry.orkestia.dev/<namespace>.
+    value: ${{ steps.login.outputs.registry }}
+  pip-index-url:
+    description: The namespace's simple index, for --extra-index-url or --index-url.
+    value: ${{ steps.login.outputs.pip-index-url }}
+  pip-upload-url:
+    description: Upload URL for twine or uv publish.
+    value: ${{ steps.login.outputs.pip-upload-url }}
+  npm-registry:
+    description: The namespace's npm registry URL.
+    value: ${{ steps.login.outputs.npm-registry }}
+
+runs:
+  using: composite
+  steps:
+    - id: login
+      shell: bash
+      env:
+        INPUT_SCOPE: ${{ inputs.scope }}
+        INPUT_DOCKER: ${{ inputs.docker }}
+        INPUT_PYTHON: ${{ inputs.python }}
+        INPUT_NPM: ${{ inputs.npm }}
+        INPUT_EXCHANGE_URL: ${{ inputs.exchange-url }}
+      run: bash "$GITHUB_ACTION_PATH/login.sh"
