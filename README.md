@@ -95,13 +95,19 @@ Orkestia runner pools come with it installed.
 
 ## If the login is refused
 
-The step prints the reason.
+The step prints the reason as `orkestia: login refused (<code>: <reason>)`.
 
 | Message | Fix |
 |---|---|
 | `this job cannot request a GitHub identity token` | Add `permissions: id-token: write` to the workflow or the job |
-| `access_denied` | The repository is not in the connected GitHub organization, or no rule of your organization admits this job |
-| `invalid_scope` | The job asked for `push` but may only pull (for example a pull request) |
+| `invalid_grant: no organization is federated for this repository owner` | The repository's GitHub organization is not connected to an Orkestia organization. Connect it in Orkestia |
+| `invalid_grant: the repository belongs to another organization` | The repository's GitHub organization is connected to a different Orkestia organization |
+| `invalid_target: the organization has no active registry` | Turn on the registry for your Orkestia organization |
+| `access_denied: no trust rule admits this job` | Your organization's rules do not admit this repository, branch, tag, environment or event. An organization admin can add a rule in Orkestia |
+| `invalid_scope: this job may pull, not push` | The job asked for `scope: push` but may only pull (for example a pull request, or a branch other than the default). Remove `scope: push` to log in for pull only |
+| `limit_exceeded: ...` | A limit of your organization was reached; the reason says which. When only pushes are paused, a job without `scope: push` still logs in for pull |
+| `temporarily_unavailable: ...` | Run the step again |
+| `invalid_grant: subject_token was refused` | GitHub's identity token was not accepted, for example because it expired. Run the job again |
 
 ## License
 
